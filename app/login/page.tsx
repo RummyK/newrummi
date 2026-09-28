@@ -20,11 +20,11 @@ export default function StudentLoginPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ studentNumber, name, password }),
     });
+    const data = await res.json();
     setLoading(false);
     if (res.ok) {
-      router.push("/dashboard");
+      router.push(data.mustChangePassword ? "/change-password" : "/dashboard");
     } else {
-      const data = await res.json();
       setError(data.error || "로그인에 실패했습니다.");
     }
   }
@@ -52,7 +52,7 @@ export default function StudentLoginPage() {
           required
         />
         {error && <p className="error">{error}</p>}
-        <button type="submit" disabled={loading}>
+        <button type="submit" className="full" disabled={loading}>
           {loading ? "확인 중..." : "로그인"}
         </button>
       </form>

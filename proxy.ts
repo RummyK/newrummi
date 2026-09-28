@@ -12,9 +12,13 @@ export async function proxy(req: NextRequest) {
     }
   }
 
-  if (pathname.startsWith("/dashboard")) {
+  if (pathname.startsWith("/dashboard") || pathname.startsWith("/change-password")) {
     if (!session || session.role !== "student") {
       return NextResponse.redirect(new URL("/login", req.url));
+    }
+    // 비밀번호를 아직 안 바꾼 학생은 문제풀이 화면 대신 비밀번호 변경 화면으로 보냄
+    if (session.mustChangePassword && pathname.startsWith("/dashboard")) {
+      return NextResponse.redirect(new URL("/change-password", req.url));
     }
   }
 
@@ -22,5 +26,5 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/teacher/dashboard/:path*"],
+  matcher: ["/dashboard/:path*", "/teacher/dashboard/:path*", "/change-password"],
 };

@@ -13,19 +13,29 @@ body {
   border-radius: 12px;
   box-shadow: 0 1px 4px rgba(0,0,0,0.08);
 }
+.container-wide {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 32px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
 h1 { font-size: 20px; margin-bottom: 24px; }
+h2 { font-size: 16px; margin: 32px 0 12px; }
 label { display: block; font-size: 14px; margin: 16px 0 6px; color: #444; }
-input {
+input, textarea {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid #ccc;
   border-radius: 8px;
   font-size: 15px;
+  font-family: inherit;
 }
+textarea { resize: vertical; }
 button {
-  width: 100%;
-  margin-top: 24px;
-  padding: 12px;
+  margin-top: 16px;
+  padding: 12px 20px;
   background: #1a56db;
   color: white;
   border: none;
@@ -33,11 +43,28 @@ button {
   font-size: 15px;
   cursor: pointer;
 }
+button.secondary {
+  background: #eee;
+  color: #1a1a1a;
+}
 button:disabled { background: #9db4e8; cursor: default; }
+.full { width: 100%; }
 .error { color: #c0392b; font-size: 14px; margin-top: 12px; }
+.success { color: #157347; font-size: 14px; margin-top: 12px; }
 .home-links a {
   display: block;
   margin-top: 12px;
   color: #1a56db;
   text-decoration: none;
 }
+table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 14px; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #eee; }
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  background: #fdecea;
+  color: #c0392b;
+}
+.toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }

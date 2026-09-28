@@ -4,6 +4,7 @@ export type SessionPayload = {
   role: "student" | "teacher";
   id: string;
   name: string;
+  mustChangePassword?: boolean;
 };
 
 function getSecretKey() {
@@ -12,11 +13,11 @@ function getSecretKey() {
   return new TextEncoder().encode(secret);
 }
 
-export async function createSessionToken(payload: SessionPayload) {
-  return await new SignJWT(payload)
+export async function createSessionToken(payload: SessionPayload, expiresIn: string) {
+  return await new SignJWT(payload as unknown as Record<string, unknown>)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
-    .setExpirationTime("12h")
+    .setExpirationTime(expiresIn)
     .sign(getSecretKey());
 }
 

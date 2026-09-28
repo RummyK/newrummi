@@ -43,7 +43,7 @@ export default function TeacherLoginPage() {
           required
         />
         {error && <p className="error">{error}</p>}
-        <button type="submit" disabled={loading}>
+        <button type="submit" className="full" disabled={loading}>
           {loading ? "확인 중..." : "로그인"}
         </button>
       </form>

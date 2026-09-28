@@ -1,4 +1,5 @@
 -- Supabase 대시보드 > SQL Editor 에서 이 파일 전체를 붙여넣고 Run 하세요.
+-- (이미 한 번 실행하셨다면 다시 실행할 필요 없습니다 - migration_002.sql로 넘어가세요.)
 
 create extension if not exists "pgcrypto";
 
