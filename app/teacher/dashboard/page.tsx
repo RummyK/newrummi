@@ -13,6 +13,17 @@ type Student = {
   created_at: string;
 };
 
+type ProgressRow = {
+  id: string;
+  student_number: string;
+  name: string;
+  grade: number | null;
+  class_no: number | null;
+  solvedCount: number;
+  wrongCount: number;
+  totalProblems: number;
+};
+
 function parsePastedRows(text: string) {
   // 한 줄에 "학번,이름,학년,반" 또는 "학번 이름 학년 반" 형태를 모두 허용
   return text
@@ -35,6 +46,8 @@ export default function TeacherDashboard() {
   const router = useRouter();
   const [students, setStudents] = useState<Student[]>([]);
   const [loadingList, setLoadingList] = useState(true);
+  const [progress, setProgress] = useState<ProgressRow[]>([]);
+  const [loadingProgress, setLoadingProgress] = useState(true);
 
   const [pasteText, setPasteText] = useState("");
   const [initialPassword, setInitialPassword] = useState("");
@@ -52,8 +65,19 @@ export default function TeacherDashboard() {
     setLoadingList(false);
   }
 
+  async function loadProgress() {
+    setLoadingProgress(true);
+    const res = await fetch("/api/teacher/progress");
+    if (res.ok) {
+      const data = await res.json();
+      setProgress(data.students);
+    }
+    setLoadingProgress(false);
+  }
+
   useEffect(() => {
     loadStudents();
+    loadProgress();
   }, []);
 
   async function handleLogout() {
@@ -126,6 +150,56 @@ export default function TeacherDashboard() {
           로그아웃
         </button>
       </div>
+
+      <h2>📊 학생 진행 현황</h2>
+      {loadingProgress ? (
+        <p>불러오는 중...</p>
+      ) : progress.length === 0 ? (
+        <p style={{ color: "#666" }}>등록된 학생이 없습니다.</p>
+      ) : (
+        <table>
+          <thead>
+            <tr>
+              <th>학번</th>
+              <th>이름</th>
+              <th>학년/반</th>
+              <th>진행률</th>
+              <th>정답</th>
+              <th>오답</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {progress.map((p) => (
+              <tr key={p.id}>
+                <td>{p.student_number}</td>
+                <td>{p.name}</td>
+                <td>
+                  {p.grade ?? "-"}학년 {p.class_no ?? "-"}반
+                </td>
+                <td>
+                  {p.solvedCount} / {p.totalProblems}
+                </td>
+                <td>
+                  <span className="badge badge-solved">{p.solvedCount}</span>
+                </td>
+                <td>
+                  <span className="badge badge-상">{p.wrongCount}</span>
+                </td>
+                <td>
+                  <button
+                    className="secondary"
+                    style={{ marginTop: 0, padding: "8px 14px", fontSize: 13 }}
+                    onClick={() => router.push(`/teacher/dashboard/student/${p.id}`)}
+                  >
+                    상세보기
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
 
       <h2>학생 일괄 등록</h2>
       <p style={{ fontSize: 14, color: "#666" }}>

@@ -36,6 +36,9 @@ export default function PythonProblemSolvePage() {
 
   const workerRef = useRef<Worker | null>(null);
 
+  const roundNumber = problem ? getRoundForProblemNumber(problem.problem_number) : null;
+  const roundListPath = roundNumber ? `/dashboard/2/python/round/${roundNumber}` : "/dashboard/2/python";
+
   useEffect(() => {
     fetch(`/api/problems/${params.id}`)
       .then((res) => res.json())
@@ -46,9 +49,9 @@ export default function PythonProblemSolvePage() {
 
   useEffect(() => {
     if (!problem) return;
-    const roundNumber = getRoundForProblemNumber(problem.problem_number);
-    if (!roundNumber) return;
-    fetch(`/api/rounds/${roundNumber}`)
+    const rn = getRoundForProblemNumber(problem.problem_number);
+    if (!rn) return;
+    fetch(`/api/rounds/${rn}`)
       .then((res) => res.json())
       .then((data) => setEndsAt(data.endsAt ?? null));
   }, [problem]);
@@ -151,8 +154,8 @@ export default function PythonProblemSolvePage() {
               {expired ? "시간 종료" : formatRemaining(remaining)}
             </span>
           )}
-          <button className="secondary" onClick={() => router.push("/dashboard/2/python")}>
-            목록으로
+          <button className="secondary" onClick={() => router.push(roundListPath)}>
+            {roundNumber ? `${roundNumber}회차 목록으로` : "목록으로"}
           </button>
         </div>
       </div>
@@ -186,9 +189,16 @@ export default function PythonProblemSolvePage() {
       )}
 
       {resultMsg && (
-        <p className={resultMsg.type === "success" ? "success" : "error"} style={{ fontSize: 16 }}>
-          {resultMsg.text}
-        </p>
+        <>
+          <p className={resultMsg.type === "success" ? "success" : "error"} style={{ fontSize: 16 }}>
+            {resultMsg.text}
+          </p>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button className="secondary" onClick={() => router.push(roundListPath)}>
+              📋 {roundNumber ? `${roundNumber}회차 목록으로 돌아가기` : "목록으로 돌아가기"}
+            </button>
+          </div>
+        </>
       )}
     </div>
   );
