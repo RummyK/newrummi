@@ -7,13 +7,13 @@ export default function Grade2MenuPage() {
 
   return (
     <div className="container">
-      <h1>2학년 · 프로그래밍</h1>
+      <h1>2️⃣ 2학년 · 프로그래밍</h1>
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         <button className="full" onClick={() => router.push("/dashboard/2/python")}>
-          파이썬 문제풀이
+          🐍 파이썬 문제풀이
         </button>
         <button className="full secondary" onClick={() => alert("곧 준비될 예정입니다.")}>
-          파이썬 문제해결 프로젝트
+          🛠️ 파이썬 문제해결 프로젝트
         </button>
       </div>
       <button className="secondary full" onClick={() => router.push("/dashboard")} style={{ marginTop: 24 }}>

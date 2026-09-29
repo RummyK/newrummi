@@ -31,7 +31,8 @@ export default function StudentLoginPage() {
 
   return (
     <div className="container">
-      <h1>학생 로그인</h1>
+      <h1>🧑‍🎓 학생 로그인</h1>
+      <p className="subtitle">학번, 이름, 비밀번호를 정확히 입력하세요</p>
       <form onSubmit={handleSubmit}>
         <label htmlFor="studentNumber">학번</label>
         <input

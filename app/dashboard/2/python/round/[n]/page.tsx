@@ -97,8 +97,14 @@ export default function RoundProblemListPage() {
             >
               <td>{p.problem_number}</td>
               <td>{p.title}</td>
-              <td>{p.difficulty ?? "-"}</td>
-              <td>{p.solved ? "✅ 정답" : "미해결"}</td>
+              <td>
+                {p.difficulty ? <span className={`badge badge-${p.difficulty}`}>{p.difficulty}</span> : "-"}
+              </td>
+              <td>
+                <span className={`badge ${p.solved ? "badge-solved" : "badge-unsolved"}`}>
+                  {p.solved ? "✅ 정답" : "미해결"}
+                </span>
+              </td>
             </tr>
           ))}
         </tbody>

@@ -30,7 +30,8 @@ export default function TeacherLoginPage() {
 
   return (
     <div className="container">
-      <h1>교사 로그인</h1>
+      <h1>🍎 교사 로그인</h1>
+      <p className="subtitle">교사 전용 계정으로 로그인하세요</p>
       <form onSubmit={handleSubmit}>
         <label htmlFor="username">아이디</label>
         <input id="username" value={username} onChange={(e) => setUsername(e.target.value)} required />

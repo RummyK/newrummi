@@ -59,7 +59,7 @@ export default function RoundSelectPage() {
   return (
     <div className="container-wide">
       <div className="toolbar">
-        <h1 style={{ margin: 0 }}>파이썬 문제풀이 - 회차 선택</h1>
+        <h1 style={{ margin: 0 }}>🐍 파이썬 문제풀이 - 회차 선택</h1>
         <button className="secondary" onClick={() => router.push("/dashboard/2")}>
           메뉴로 돌아가기
         </button>
@@ -75,10 +75,7 @@ export default function RoundSelectPage() {
             const expired = !notStarted && remaining <= 0;
 
             return (
-              <div
-                key={r.number}
-                style={{ border: "1px solid #eee", borderRadius: 12, padding: 20, display: "flex", justifyContent: "space-between", alignItems: "center" }}
-              >
+              <div key={r.number} className="round-card">
                 <div>
                   <h2 style={{ margin: "0 0 4px" }}>
                     {r.number}회차 ({r.count}문제)
