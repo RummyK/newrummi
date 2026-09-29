@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { getRoundForProblemNumber } from "@/lib/rounds";
 
 type Problem = {
   id: string;
@@ -13,6 +14,14 @@ type Problem = {
 
 const RUN_TIMEOUT_MS = 8000;
 
+function formatRemaining(ms: number) {
+  if (ms <= 0) return "00:00";
+  const totalSeconds = Math.floor(ms / 1000);
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+
 export default function PythonProblemSolvePage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
@@ -22,6 +31,8 @@ export default function PythonProblemSolvePage() {
   const [running, setRunning] = useState(false);
   const [resultMsg, setResultMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [pyodideLoading, setPyodideLoading] = useState(true);
+  const [endsAt, setEndsAt] = useState<string | null>(null);
+  const [now, setNow] = useState(Date.now());
 
   const workerRef = useRef<Worker | null>(null);
 
@@ -32,6 +43,20 @@ export default function PythonProblemSolvePage() {
         if (data.problem) setProblem(data.problem);
       });
   }, [params.id]);
+
+  useEffect(() => {
+    if (!problem) return;
+    const roundNumber = getRoundForProblemNumber(problem.problem_number);
+    if (!roundNumber) return;
+    fetch(`/api/rounds/${roundNumber}`)
+      .then((res) => res.json())
+      .then((data) => setEndsAt(data.endsAt ?? null));
+  }, [problem]);
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     // 문제 화면에 들어오면 미리 Pyodide 워커를 하나 띄워서 로딩 시간을 줄입니다.
@@ -104,16 +129,34 @@ export default function PythonProblemSolvePage() {
     );
   }
 
+  const remaining = endsAt ? new Date(endsAt).getTime() - now : null;
+  const expired = remaining !== null && remaining <= 0;
+
   return (
     <div className="container-wide">
       <div className="toolbar">
         <h1 style={{ margin: 0 }}>
           {problem.problem_number}. {problem.title}
         </h1>
-        <button className="secondary" onClick={() => router.push("/dashboard/2/python")}>
-          목록으로
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          {remaining !== null && (
+            <span
+              style={{
+                fontFamily: "monospace",
+                fontSize: 20,
+                fontWeight: 700,
+                color: expired || remaining < 5 * 60 * 1000 ? "#c0392b" : "#1a1a1a",
+              }}
+            >
+              {expired ? "시간 종료" : formatRemaining(remaining)}
+            </span>
+          )}
+          <button className="secondary" onClick={() => router.push("/dashboard/2/python")}>
+            목록으로
+          </button>
+        </div>
       </div>
+      {expired && <p className="error">회차 시간이 종료되어 더 이상 제출할 수 없습니다.</p>}
 
       <p style={{ whiteSpace: "pre-wrap", background: "#f7f7f8", padding: 16, borderRadius: 8 }}>
         {problem.description}
@@ -129,7 +172,7 @@ export default function PythonProblemSolvePage() {
         spellCheck={false}
       />
 
-      <button onClick={runAndSubmit} disabled={running || pyodideLoading}>
+      <button onClick={runAndSubmit} disabled={running || pyodideLoading || expired}>
         {running ? "채점 중... (처음 실행 시 파이썬 로딩에 시간이 걸릴 수 있어요)" : "실행 및 채점"}
       </button>
 
