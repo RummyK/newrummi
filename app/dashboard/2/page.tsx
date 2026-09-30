@@ -12,7 +12,7 @@ export default function Grade2MenuPage() {
         <button className="full" onClick={() => router.push("/dashboard/2/python")}>
           🐍 파이썬 문제풀이
         </button>
-        <button className="full secondary" onClick={() => alert("곧 준비될 예정입니다.")}>
+        <button className="full secondary" onClick={() => router.push("/dashboard/2/project")}>
           🛠️ 파이썬 문제해결 프로젝트
         </button>
       </div>

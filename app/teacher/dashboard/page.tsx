@@ -24,6 +24,18 @@ type ProgressRow = {
   totalProblems: number;
 };
 
+type ProjectRow = {
+  id: string;
+  student_number: string;
+  name: string;
+  grade: number | null;
+  class_no: number | null;
+  title: string | null;
+  submitted: boolean;
+  submittedAt: string | null;
+  hasDraft: boolean;
+};
+
 function parsePastedRows(text: string) {
   // 한 줄에 "학번,이름,학년,반" 또는 "학번 이름 학년 반" 형태를 모두 허용
   return text
@@ -48,6 +60,8 @@ export default function TeacherDashboard() {
   const [loadingList, setLoadingList] = useState(true);
   const [progress, setProgress] = useState<ProgressRow[]>([]);
   const [loadingProgress, setLoadingProgress] = useState(true);
+  const [projects, setProjects] = useState<ProjectRow[]>([]);
+  const [loadingProjects, setLoadingProjects] = useState(true);
 
   const [pasteText, setPasteText] = useState("");
   const [initialPassword, setInitialPassword] = useState("");
@@ -75,9 +89,20 @@ export default function TeacherDashboard() {
     setLoadingProgress(false);
   }
 
+  async function loadProjects() {
+    setLoadingProjects(true);
+    const res = await fetch("/api/teacher/projects");
+    if (res.ok) {
+      const data = await res.json();
+      setProjects(data.students);
+    }
+    setLoadingProjects(false);
+  }
+
   useEffect(() => {
     loadStudents();
     loadProgress();
+    loadProjects();
   }, []);
 
   async function handleLogout() {
@@ -193,6 +218,50 @@ export default function TeacherDashboard() {
                     onClick={() => router.push(`/teacher/dashboard/student/${p.id}`)}
                   >
                     상세보기
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+
+      <h2>🛠️ 프로젝트 제출 현황</h2>
+      {loadingProjects ? (
+        <p>불러오는 중...</p>
+      ) : projects.length === 0 ? (
+        <p style={{ color: "#666" }}>등록된 학생이 없습니다.</p>
+      ) : (
+        <table>
+          <thead>
+            <tr>
+              <th>학번</th>
+              <th>이름</th>
+              <th>제목</th>
+              <th>상태</th>
+              <th>제출 시각</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {projects.map((p) => (
+              <tr key={p.id}>
+                <td>{p.student_number}</td>
+                <td>{p.name}</td>
+                <td>{p.title || <span style={{ color: "#999" }}>-</span>}</td>
+                <td>
+                  <span className={`badge ${p.submitted ? "badge-solved" : "badge-unsolved"}`}>
+                    {p.submitted ? "제출 완료" : p.hasDraft ? "작성 중" : "시작 안 함"}
+                  </span>
+                </td>
+                <td>{p.submittedAt ? new Date(p.submittedAt).toLocaleString("ko-KR") : "-"}</td>
+                <td>
+                  <button
+                    className="secondary"
+                    style={{ marginTop: 0, padding: "8px 14px", fontSize: 13 }}
+                    onClick={() => router.push(`/teacher/dashboard/project/${p.id}`)}
+                  >
+                    보고서 보기
                   </button>
                 </td>
               </tr>

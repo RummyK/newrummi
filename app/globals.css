@@ -83,6 +83,15 @@ input:focus, textarea:focus {
 
 textarea { resize: vertical; }
 
+input[type="checkbox"] {
+  width: auto;
+  padding: 0;
+  border: none;
+  background: none;
+  accent-color: var(--primary);
+  transform: scale(1.15);
+}
+
 button {
   margin-top: 16px;
   padding: 12px 22px;
