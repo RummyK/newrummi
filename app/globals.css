@@ -185,6 +185,18 @@ tbody tr[style*="cursor: pointer"]:hover, tbody tr:hover { background: var(--pri
 
 .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 16px; }
 
+@media print {
+  body { background: white; }
+  .no-print { display: none !important; }
+  .container-wide, .container {
+    box-shadow: none;
+    border: none;
+    margin: 0;
+    max-width: 100%;
+    padding: 0;
+  }
+}
+
 .round-card {
   border: 1.5px solid var(--border);
   border-radius: 16px;

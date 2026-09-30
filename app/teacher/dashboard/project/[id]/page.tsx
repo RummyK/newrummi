@@ -86,9 +86,12 @@ export default function TeacherProjectViewPage() {
         <h1 style={{ margin: 0 }}>
           🛠️ {student.name} ({student.student_number}) 프로젝트 보고서
         </h1>
-        <button className="secondary" onClick={() => router.push("/teacher/dashboard")}>
-          목록으로
-        </button>
+        <div className="no-print" style={{ display: "flex", gap: 8 }}>
+          <button onClick={() => window.print()}>🖨️ PDF로 저장</button>
+          <button className="secondary" onClick={() => router.push("/teacher/dashboard")}>
+            목록으로
+          </button>
+        </div>
       </div>
 
       {!report ? (
