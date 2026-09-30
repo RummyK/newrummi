@@ -2,15 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { requireStudentSession } from "@/lib/requireStudent";
 import { postToPadlet } from "@/lib/padlet";
-import { buildPadletSubject, buildPadletBody } from "@/lib/padletFormat";
+import { buildPadletV2Subject, buildPadletV2Body } from "@/lib/padletFormat";
 
-// 학생 본인의 "파이썬 문제해결 프로젝트" 보고서를 가져옵니다. 아직 없으면 report: null 반환.
+// 학생 본인의 "Padlet업로드 보고서"를 가져옵니다. 아직 없으면 report: null 반환.
 export async function GET(req: NextRequest) {
   const session = await requireStudentSession(req);
   if (!session) return NextResponse.json({ error: "학생 로그인이 필요합니다." }, { status: 401 });
 
   const { data, error } = await supabaseAdmin
-    .from("project_reports")
+    .from("padlet_reports")
     .select("*")
     .eq("student_id", session.id)
     .maybeSingle();
@@ -20,40 +20,54 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ report: data ?? null, studentName: session.name });
 }
 
-// 저장(임시저장) 또는 제출. body.submitted가 true면 제출 완료로 표시합니다.
+// 저장(임시저장) 또는 제출.
 export async function POST(req: NextRequest) {
   const session = await requireStudentSession(req);
   if (!session) return NextResponse.json({ error: "학생 로그인이 필요합니다." }, { status: 401 });
 
   const body = await req.json();
   const {
+    subject,
     title,
     purpose,
-    algorithmDesign,
+    topicReason,
+    algorithmSteps,
+    keyConcepts,
     code,
+    codeExplanation,
     runOutput,
-    runNote,
-    review,
+    resultAnalysis,
+    errorImprovement,
+    learned,
+    difficultyNote,
+    futureDirection,
     aiUsageNote,
     selfCheck,
     submitted,
   } = body;
 
   const { data: existing } = await supabaseAdmin
-    .from("project_reports")
+    .from("padlet_reports")
     .select("id, submitted_at, padlet_post_id")
     .eq("student_id", session.id)
     .maybeSingle();
 
   const payload = {
     student_id: session.id,
+    subject: subject ?? "",
     title: title ?? "",
     purpose: purpose ?? "",
-    algorithm_design: algorithmDesign ?? "",
+    topic_reason: topicReason ?? "",
+    algorithm_steps: algorithmSteps ?? [],
+    key_concepts: keyConcepts ?? {},
     code: code ?? "",
+    code_explanation: codeExplanation ?? "",
     run_output: runOutput ?? "",
-    run_note: runNote ?? "",
-    review: review ?? "",
+    result_analysis: resultAnalysis ?? "",
+    error_improvement: errorImprovement ?? "",
+    learned: learned ?? "",
+    difficulty_note: difficultyNote ?? "",
+    future_direction: futureDirection ?? "",
     ai_usage_note: aiUsageNote ?? "",
     self_check: selfCheck ?? {},
     submitted: !!submitted,
@@ -62,27 +76,31 @@ export async function POST(req: NextRequest) {
   };
 
   let { data, error } = await supabaseAdmin
-    .from("project_reports")
+    .from("padlet_reports")
     .upsert(payload, { onConflict: "student_id" })
     .select()
     .maybeSingle();
 
   if (error) return NextResponse.json({ error: "저장하지 못했습니다." }, { status: 500 });
 
-  // 제출(submitted=true) 순간, 아직 Padlet에 올라간 적이 없으면 자동으로 게시합니다.
-  // (설정 안 되어 있으면 postToPadlet이 조용히 null을 반환하고 넘어감)
+  // 제출 순간, 아직 Padlet에 올라간 적이 없으면 (개인 유료 계정으로 API가 설정되어 있을 때만) 자동 게시합니다.
   if (submitted && !existing?.padlet_post_id && data) {
-    const subject = buildPadletSubject(session.name, title);
-    const bodyText = buildPadletBody({
-      purpose,
-      algorithmDesign,
+    const postSubject = buildPadletV2Subject(session.name, title);
+    const postBody = buildPadletV2Body({
+      subject: subject ?? "",
+      purpose: purpose ?? "",
+      topicReason: topicReason ?? "",
+      codeExplanation: codeExplanation ?? "",
       runOutput: runOutput ?? "",
-      review,
+      resultAnalysis: resultAnalysis ?? "",
+      learned: learned ?? "",
+      difficultyNote: difficultyNote ?? "",
+      futureDirection: futureDirection ?? "",
     });
-    const postId = await postToPadlet(subject, bodyText);
+    const postId = await postToPadlet(postSubject, postBody);
     if (postId) {
       const { data: updated } = await supabaseAdmin
-        .from("project_reports")
+        .from("padlet_reports")
         .update({ padlet_post_id: postId, padlet_posted_at: new Date().toISOString() })
         .eq("student_id", session.id)
         .select()

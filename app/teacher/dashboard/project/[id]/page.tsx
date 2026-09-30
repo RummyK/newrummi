@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { buildPadletSubject, buildPadletBody } from "@/lib/padletFormat";
+
+const PADLET_BOARD_URL = process.env.NEXT_PUBLIC_PADLET_BOARD_URL || "";
 
 const CHECK_ITEMS: { key: string; label: string }[] = [
   { key: "purpose", label: "목적 및 주제를 명확히 작성했다" },
@@ -24,6 +27,7 @@ type Report = {
   submitted: boolean;
   submitted_at: string | null;
   updated_at: string | null;
+  padlet_post_id: string | null;
 };
 
 type Student = { id: string; student_number: string; name: string; grade: number | null; class_no: number | null };
@@ -46,6 +50,25 @@ export default function TeacherProjectViewPage() {
   const [report, setReport] = useState<Report | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [copied, setCopied] = useState(false);
+
+  async function copyForPadlet() {
+    if (!student || !report) return;
+    const subject = buildPadletSubject(student.name, report.title);
+    const body = buildPadletBody({
+      purpose: report.purpose,
+      algorithmDesign: report.algorithm_design,
+      runOutput: report.run_output,
+      review: report.review,
+    });
+    try {
+      await navigator.clipboard.writeText(`${subject}\n\n${body}`);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      alert("복사에 실패했어요.");
+    }
+  }
 
   useEffect(() => {
     fetch(`/api/teacher/students/${params.id}/project`)
@@ -105,7 +128,21 @@ export default function TeacherProjectViewPage() {
             </span>{" "}
             {report.submitted_at && `· 제출: ${new Date(report.submitted_at).toLocaleString("ko-KR")}`}
             {report.updated_at && ` · 최근 수정: ${new Date(report.updated_at).toLocaleString("ko-KR")}`}
+            {report.padlet_post_id && " · 📌 Padlet에 게시됨"}
           </p>
+
+          <div className="no-print" style={{ display: "flex", gap: 8, flexWrap: "wrap", margin: "0 0 20px" }}>
+            <button className="secondary" style={{ marginTop: 0 }} onClick={copyForPadlet}>
+              {copied ? "✅ 복사됨!" : "📋 Padlet 게시용 내용 복사하기"}
+            </button>
+            {PADLET_BOARD_URL && (
+              <a href={PADLET_BOARD_URL} target="_blank" rel="noopener noreferrer">
+                <button className="secondary" style={{ marginTop: 0 }} type="button">
+                  🔗 Padlet 보드 열기
+                </button>
+              </a>
+            )}
+          </div>
 
           <h2>제목</h2>
           <p style={{ fontSize: 17, fontWeight: 700 }}>{report.title || <span style={{ color: "#999" }}>(제목 없음)</span>}</p>
